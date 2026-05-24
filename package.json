@@ -1,0 +1,40 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "dev": "npx nodemon server.js",
+    "build": "npm install && npm install --prefix FRONTEND  && npm run build --prefix FRONTEND",
+    "start": "node BACKEND/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "backend"
+  ],
+  "author": "Shivam Kumar",
+  "license": "ISC",
+  "type": "module",
+  "description": "glamgully for shopping web app.",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.6.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "datauri": "^4.1.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.4.0",
+    "google-auth-library": "^10.4.0",
+    "googleapis": "^156.0.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.1",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.0",
+    "node-fetch": "^3.3.2",
+    "razorpay": "^2.9.6",
+    "twilio": "^5.8.0",
+    "url": "^0.11.4"
+  }
+}
