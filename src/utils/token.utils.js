@@ -1,22 +1,30 @@
+import jwt from "jsonwebtoken"
+import { JWT_SECRET, JWT_REFRESH_SECRET } from "../config/env.config.js"
 
 
-const generateToken = async (id) => {
-
-    return jwt.sign({ id }, process.env.USER_SECRET_KEY, { expiresIn: "1d" })
-
+const generateAccessToken = (id) => {
+    return jwt.sign({ id }, JWT_SECRET, { expiresIn: "5m" })
 }
 
-const verifyToken = async (token) => {
-    return jwt.verify(token, process.env.USER_SECRET_KEY)
+const generateRefreshToken = (id) => {
+    return jwt.sign({ id }, JWT_REFRESH_SECRET, { expiresIn: "7d" })
 }
 
-const createHttpOnlyTokenCookie = (token) => {
-    return res.cookie("token", token, {
+const verifyAccessToken = (token) => {
+    return jwt.verify(token, JWT_SECRET)
+}
+
+const verifyRefreshToken = (token) => {
+    return jwt.verify(token, JWT_REFRESH_SECRET)
+}
+
+const createHttpOnlyTokenCookie = () => {
+    return {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-    });
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    }
 };
 
-export { generateToken, verifyToken, createHttpOnlyTokenCookie }
+export { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken, createHttpOnlyTokenCookie }

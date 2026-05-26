@@ -1,18 +1,22 @@
 import IUserRepository from "../contract/user.contract.js";
 import User from "../../models/customer.model.js";
-import { AppError } from "../../utils/error.utils.js";
+import { AppError, asyncHandler } from "../../utils/error.utils.js";
 
 class MongoUserRepository extends IUserRepository {
 
     async createUser(userData) {
-        try {
-            const user = new User(userData);
-            const savedUser = await user.save();
-            return savedUser;
-        } catch (error) {
-            console.error("Error creating user:", error);
-            throw new AppError(`Failed to create user: ${error.message}`, 500, error);
-        }
+        const user = new User(userData);
+        const savedUser = await user.save();
+        return savedUser;
+    }
+
+    async findUser(emailOrphone) {
+        return await User.findOne({
+            $or: [
+                { email: emailOrphone },
+                { phone: emailOrphone }
+            ]
+        }).select("+password")
     }
 
     async findUserByEmail(email) {
@@ -28,11 +32,7 @@ class MongoUserRepository extends IUserRepository {
     }
 
     async updateUser(userId, updateObj) {
-        try {
-            return await User.findByIdAndUpdate(userId, updateObj, { new: true });
-        } catch (error) {
-            throw new AppError("Failed to update user", 500, error);
-        }
+        return await User.findByIdAndUpdate(userId, updateObj, { new: true });
     }
 
 }

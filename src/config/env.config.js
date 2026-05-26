@@ -3,6 +3,7 @@ import "dotenv/config"
 export const {
   PORT,
   MONGO_URI,
+  NODE_ENV,
   JWT_SECRET,
   JWT_REFRESH_SECRET,
   GOOGLE_CLIENT_ID,
@@ -12,6 +13,7 @@ export const {
 const checkVariables = {
   PORT,
   MONGO_URI,
+  NODE_ENV,
   JWT_SECRET,
   JWT_REFRESH_SECRET,
   GOOGLE_CLIENT_ID,

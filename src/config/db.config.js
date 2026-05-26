@@ -1,10 +1,14 @@
-import mongoose from "mongoose";
+import { connect } from "mongoose";
+import { MONGO_URI } from "./env.config.js"
 
 function connectDB() {
-    mongoose.connect(`${process.env.MONGO_URI}`).then(() => {
+
+    try {
+        connect(MONGO_URI)
         console.log("Database connected successfully")
-    }).catch(err => {
-        console.log(err) 
-    }) 
+    } catch (err) {
+        console.log("Mongo Error", err.message)
+        process.exit(1)
+    }
 }
 export default connectDB;
