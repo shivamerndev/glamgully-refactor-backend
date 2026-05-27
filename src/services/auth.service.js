@@ -2,7 +2,7 @@ import MongoUserRepository from "../repository/implemention/mongo.user.js";
 import { AppError } from "../utils/error.utils.js";
 import { createHttpOnlyTokenCookie, generateAccessToken, generateRefreshToken } from "../utils/token.utils.js"
 
-class UserService {
+class AuthService {
 
     constructor() {
         this.userRepository = new MongoUserRepository();
@@ -68,13 +68,28 @@ class UserService {
         return updatedUser;
     }
 
-    async logout(refresh_token) {
-        const blackListedToken = await this.userRepository.blackListToken(refresh_token);
-        if (!blackListedToken) throw new AppError(500, "Logout Failed")
-        
-        return blackListedToken;
+    async logout(refreshToken) {
+
+        const blackListedToken = await this.userRepository.findBlackListToken(refreshToken);
+        if (blackListedToken) throw new AppError(500, "Bad Request")
+
+        const newBlackList = await this.userRepository.blackListToken(refreshToken);
+
+        return newBlackList;
+    }
+
+    async refresh_token(refreshToken, userId) {
+
+        const blackListedToken = await this.userRepository.findBlackListToken(refreshToken);
+        if (blackListedToken) throw new AppError(500, "Please sign in again.")
+
+        const newAccessToken = generateAccessToken(userId)
+        const newRefreshToken = generateRefreshToken(userId)
+        const httpOnly = createHttpOnlyTokenCookie()
+
+        return { newAccessToken, newRefreshToken, httpOnly }
     }
 
 }
 
-export default new UserService();
+export default new AuthService();

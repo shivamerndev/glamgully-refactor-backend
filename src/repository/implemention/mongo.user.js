@@ -1,6 +1,7 @@
 import IUserRepository from "../contract/user.contract.js";
 import User from "../../models/customer.model.js";
-import { AppError, asyncHandler } from "../../utils/error.utils.js";
+import Token from "../../models/token.model.js"
+
 
 class MongoUserRepository extends IUserRepository {
 
@@ -33,6 +34,14 @@ class MongoUserRepository extends IUserRepository {
 
     async updateUser(userId, updateObj) {
         return await User.findByIdAndUpdate(userId, updateObj, { new: true });
+    }
+
+    async blackListToken(token) {
+        return await Token.create({ token });
+    }
+
+    async findBlackListToken(token) {
+        return await Token.findOne({ token });
     }
 
 }

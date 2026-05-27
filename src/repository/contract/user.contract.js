@@ -25,6 +25,14 @@ class IUserRepository {
         throw new Error("Method not implemented");
     }
 
+    async blackListToken(token) {
+        throw new Error("Method not implemented");
+    }
+
+    async findBlackListToken(token) {
+        throw new Error("Method not implemented");
+    }
+
 }
 
 export default IUserRepository;

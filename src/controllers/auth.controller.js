@@ -1,6 +1,7 @@
 import userValidator from "../validator/user.validator.js"
-import userService from "../services/user.service.js";
+import authService from "../services/auth.service.js";
 import { AppError, asyncHandler } from "../utils/error.utils.js"
+import { verifyRefreshToken } from "../utils/token.utils.js";
 
 
 class AuthController {
@@ -49,46 +50,36 @@ class AuthController {
 
     logout = asyncHandler(async (req, res) => {
 
-        const refresh_token = req.cookies.refresh_token
+        const userId = req.user.id;
+        const refresh_token = req.cookies.refresh_token;
+
+        if (!userId) throw new AppError(400, "Bad Request.")
         if (!refresh_token) throw new AppError(400, "No refresh token found.")
 
-            let blackList = userService.
+        await userService.logout(refresh_token);
 
-        res.clearCookie("refresh_token")
+        res.clearCookie("refresh_token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict"
+        })
+
         res.success(200, "Logged Out Successfully.")
     });
 
+    refreshAccessToken = asyncHandler(async (req, res) => {
 
+        const refresh_token = req.cookies.refresh_token
+        if (!refresh_token) throw new AppError(400, "Refresh Token Must be Provided.")
 
+        const decoded = verifyRefreshToken(refresh_token)
 
+        const { newAccessToken, newRefreshToken, httpOnly } = await userService.refresh_token(refresh_token, decoded.id)
 
+        res.cookie(newRefreshToken, httpOnly)
 
-    refreshAccessToken() {
-
-    }
-
-    resetPassword = async (req, res) => {
-        try {
-            const { currentPassword, newPassword } = req.body;
-            if (!currentPassword || !newPassword) {
-                throw new AppError(400, "Current and new password are required.");
-            }
-            const user = await Customer.findById("68bebdf0119ae77d142e3197").select("+password");
-            if (!user) {
-                return res.status(404).json({ message: "User not found." });
-            }
-            const isMatch = await user.comparePassword(currentPassword);
-            if (!isMatch) {
-                return res.status(401).json({ message: "Current password is incorrect." });
-            }
-            user.password = newPassword;
-            await user.save();
-            return res.status(200).json({ message: "Password updated successfully." });
-        } catch (error) {
-            console.error("Update password error:", error);
-            res.status(500).json({ message: "Server error. Please try again later." });
-        }
-    };
+        res.success(200, "Token Refreshed Successfully.", { token: newAccessToken })
+    })
 
 }
 
