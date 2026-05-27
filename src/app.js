@@ -1,25 +1,25 @@
 import express from "express";
-import authRouter from  "./routes/auth.routes.js"
+import authRouter from "./routes/auth.routes.js"
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv"
 import morgan from "morgan"
-dotenv.config() 
+import errorMiddleware from "./middlewares/error.middleware.js";
+import responseMiddleware from "./middlewares/response.middleware.js";
 
 const app = express();
 
-// --- Middlewares ---
-app.use(cors({
-  origin: ["https://glamgully.vercel.app", "http://localhost:5173"],
-  credentials: true,
-}));
+
+app.use(cors());
 
 app.use(morgan("dev"))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.use(responseMiddleware)
+app.use("/api/auth/v1", authRouter)
 
-app.use("/api/auth/v1",authRouter)
+
+app.use(errorMiddleware)
 
 export default app
