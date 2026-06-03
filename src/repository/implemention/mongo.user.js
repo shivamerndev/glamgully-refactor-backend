@@ -1,5 +1,5 @@
 import IUserRepository from "../contract/user.contract.js";
-import User from "../../models/customer.model.js";
+import User from "../../models/user.model.js";
 import Token from "../../models/token.model.js"
 
 
