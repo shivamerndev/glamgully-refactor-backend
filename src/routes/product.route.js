@@ -1,31 +1,33 @@
 import { Router } from "express";
 import ProductController from "../controllers/product.controller.js";
 import upload from "../config/multer.config.js";
+import { userAuth } from "../middlewares/auth.middleware.js";
+import Product from "../models/product.model.js";
 
 const router = Router()
 
 router.post("/create", upload.array("productimage", 5), ProductController.createProduct)
 router.get("/all", ProductController.getAllProducts)
 
-// Router.get("/getproduct", getAllProducts)
-// Router.get("/best/products", bestSellingProducts)
-// Router.get("/getadminproduct", adminAuth, getAllProductsAdmin)
-// Router.get("/singleproduct/:productId", getSingleProduct)
-// Router.post("/editproduct", editProduct)
-// Router.post("/deleteproduct/:productId", deleteProduct)
-// Router.post("/search", searchProduct)
-// Router.post("/admin/search",adminAuth, searchProductForAdmin)
-// Router.get("/highest/price", async (req, res) => {
-//     try {
-//         const highest = await productModel.findOne({ isActive: true }).sort({ price: -1 }).select("price");
-//         res.status(200).send(highest.price)
-//     } catch (error) {
-//         res.status(400).send(error.message)
-//     }
-// })
-// Router.get("/find/category", productCategory)
-// Router.get("/find/category/public", productCategorypublic)
-// Router.post("/archive/category", productCategoryArchieve)
-// Router.get("/trending/products", TrendingProducts)
+router.get("/getproduct", ProductController.getAllProducts)
+router.get("/best/products", ProductController.bestSellingProducts)
+router.get("/getadminproduct", userAuth, ProductController.getAllProductsAdmin)
+router.get("/singleproduct/:productId", ProductController.getSingleProduct)
+router.post("/editproduct", ProductController.editProduct)
+router.post("/deleteproduct/:productId", ProductController.deleteProduct)
+router.post("/search", ProductController.searchProduct)
+router.post("/admin/search", userAuth, ProductController.searchProductForAdmin)
+router.get("/highest/price", async (req, res) => {
+    try {
+        const highest = await Product.findOne({ isActive: true }).sort({ price: -1 }).select("price");
+        res.status(200).send(highest.price)
+    } catch (error) {
+        res.status(400).send(error.message)
+    }
+})
+router.get("/find/category", ProductController.productCategory)
+router.get("/find/category/public", ProductController.productCategorypublic)
+router.post("/archive/category", ProductController.productCategoryArchieve)
+router.get("/trending/products", ProductController.TrendingProducts)
 
 export default router;
