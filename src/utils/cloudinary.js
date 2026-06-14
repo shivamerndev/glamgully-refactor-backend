@@ -36,24 +36,25 @@ export const getCloudinaryResponse = async (file) => {
 
     } catch (error) {
         console.log("Cloudinary upload error:", error.message);
+        throw error;
     }
 };
 
 // 📌 Multiple files handler
 export const uploadMultipleImages = async (files) => {
     try {
-        const urls = [];
+        const uploadPromises = files.map(file => getCloudinaryResponse(file));
+        const urls = await Promise.all(uploadPromises);
 
-        for (const file of files) {
-            const url = await getCloudinaryResponse(file);
-            if (url) urls.push(url);
+        if (urls.some(url => !url)) {
+            throw new Error("Failed to upload all images. One or more uploads failed.");
         }
 
         return urls; // array of secure URLs
 
     } catch (err) {
         console.log("Multiple image upload error:", err.message);
-        return [];
+        throw err;
     }
 };
 
