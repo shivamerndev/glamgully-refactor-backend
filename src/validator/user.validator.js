@@ -2,7 +2,7 @@ import joi from "joi"
 
 function userValidator(userData) {
 
-    const schema = joi.object({
+    const registerSchema = joi.object({
         fullName: joi.string().min(3).required().trim(),
         phone: joi.string().min(10).max(10).required(),
         email: joi.string().email().required().lowercase(),
@@ -10,7 +10,12 @@ function userValidator(userData) {
         gender: joi.string().default("male").required(),
     })
 
-    return schema.validate(userData)
+    const loginSchema = joi.object({
+        emailorphone: joi.string().required(),
+        password: joi.string().required().min(8),
+    })
+
+    return { registerValidator: registerSchema.validate(userData), loginValidator: loginSchema.validate(userData) }
 }
 
 export default userValidator;

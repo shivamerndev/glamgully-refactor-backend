@@ -9,7 +9,9 @@ class AuthController {
     register = asyncHandler(async (req, res) => {
 
         const userData = req.body;
-        const { error } = userValidator(userData)
+        const { registerValidator: error } = userValidator(userData)
+
+        console.log("error", error)
 
         if (error) throw new AppError(400, error.details[0].message)
 
