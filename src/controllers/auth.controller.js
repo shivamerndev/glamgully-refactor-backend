@@ -1,4 +1,4 @@
-import userValidator from "../validator/user.validator.js"
+import { registerSchema } from "../validator/auth.validator.js"
 import authService from "../services/auth.service.js";
 import { AppError, asyncHandler } from "../utils/error.utils.js"
 import { verifyRefreshToken } from "../utils/token.utils.js";
@@ -9,13 +9,11 @@ class AuthController {
     register = asyncHandler(async (req, res) => {
 
         const userData = req.body;
-        const { registerValidator: error } = userValidator(userData)
-
-        console.log("error", error)
+        const { error } = registerSchema.validate(userData)
 
         if (error) throw new AppError(400, error.details[0].message)
 
-        let { accessToken, refreshToken, httpOnly } = await userService.register(req.body)
+        let { accessToken, refreshToken, httpOnly } = await authService.register(req.body)
 
         res.cookie("refresh_token", refreshToken, httpOnly)
         res.success(201, "Registered Successfully.", { token: accessToken })
@@ -27,7 +25,7 @@ class AuthController {
 
         if (!emailOrphone || !password) throw new AppError(400, "Email/Phone and password are required.");
 
-        let { accessToken, refreshToken, httpOnly } = await userService.login(req.body)
+        let { accessToken, refreshToken, httpOnly } = await authService.login(req.body)
 
         res.cookie("refresh_token", refreshToken, httpOnly)
         res.success(200, "LoggedIn Successfully.", { token: accessToken })
@@ -35,7 +33,7 @@ class AuthController {
 
     getUser = asyncHandler(async (req, res) => {
 
-        let user = await userService.getUser(req.user.id)
+        let user = await authService.getUser(req.user.id)
 
         res.success(200, "User Fetched Successfully", user)
     })
@@ -45,7 +43,7 @@ class AuthController {
         const userId = req.user.id;
         const updates = req.body;
 
-        let user = await userService.updateUser(userId, updates)
+        let user = await authService.updateUser(userId, updates)
 
         res.success(200, "Updated Successfully", user)
     })
@@ -58,7 +56,7 @@ class AuthController {
         if (!userId) throw new AppError(400, "Bad Request.")
         if (!refresh_token) throw new AppError(400, "No refresh token found.")
 
-        await userService.logout(refresh_token);
+        await authService.logout(refresh_token);
 
         res.clearCookie("refresh_token", {
             httpOnly: true,
@@ -76,7 +74,7 @@ class AuthController {
 
         const decoded = verifyRefreshToken(refresh_token)
 
-        const { newAccessToken, newRefreshToken, httpOnly } = await userService.refresh_token(refresh_token, decoded.id)
+        const { newAccessToken, newRefreshToken, httpOnly } = await authService.refresh_token(refresh_token, decoded.id)
 
         res.cookie(newRefreshToken, httpOnly)
 
