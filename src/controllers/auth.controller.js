@@ -2,9 +2,25 @@ import { registerSchema } from "../validator/auth.validator.js"
 import authService from "../services/auth.service.js";
 import { AppError, asyncHandler } from "../utils/error.utils.js"
 import { verifyRefreshToken } from "../utils/token.utils.js";
+import { GOOGLE_CLIENT_ID } from "../config/env.config.js"
+
+
+
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 
 class AuthController {
+
+
+    googleAuth = asyncHandler(async (req, res) => {
+
+        const { idToken } = req.body;
+
+        let { accessToken, refreshToken, httpOnly } = await authService.googleService(idToken)
+        res.cookie("refresh_token", refreshToken, httpOnly)
+
+        res.success(200, "Authentication Successfully.", {token : accessToken })
+    })
 
     register = asyncHandler(async (req, res) => {
 

@@ -10,6 +10,6 @@ router.get("/user", userAuth, authController.getUser)
 router.patch("/user", userAuth, authController.updateUser)
 router.post("/logout", userAuth, authController.logout)
 router.post("/refresh_token", authController.refreshAccessToken)
-// router.post("/google", authController.google)
+router.post("/google", authController.googleAuth)
 
 export default router;

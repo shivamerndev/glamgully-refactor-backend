@@ -8,6 +8,30 @@ class AuthService {
         this.userRepository = new MongoUserRepository();
     }
 
+    async googleService(idToken) {
+
+        if (!idToken) throw new AppError(400, "Id Token Must be Provided.")
+
+        const ticket = await client.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID });
+
+        const payload = ticket.getPayload();
+
+        const { name: fullName, email, sub: googleId } = payload;
+        
+        let user = await this.userRepository.findUserByEmail(email);
+        
+        if (!user) {
+            user = await this.userRepository.createUser({ fullName, email, googleId });
+        }
+
+        const accessToken = generateAccessToken(user._id)
+        const refreshToken = generateRefreshToken(user._id)
+        const httpOnly = createHttpOnlyTokenCookie()
+
+        return { accessToken, refreshToken, httpOnly }
+    }
+
+
     async register(userData) {
 
         const existingUser = await this.userRepository.findUserByEmail(userData.email);
