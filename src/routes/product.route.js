@@ -11,15 +11,14 @@ const router = Router()
  * @description All Product Routes
  */
 
-router.post("/create", upload.array("productimage", 5), ProductController.createProduct)
-router.get("/all", ProductController.getAllProducts)
+router.post("/", upload.array("productimage", 5), ProductController.createProduct)
+router.get("/", ProductController.getAllProducts)
+router.put("/:id", ProductController.editProduct)
+router.delete("/:id", ProductController.deleteProduct)
+router.get("/:id", ProductController.getSingleProduct)
 
-router.get("/getproduct", ProductController.getAllProducts)
-router.get("/best/products", ProductController.bestSellingProducts)
-router.get("/getadminproduct", userAuth, ProductController.getAllProductsAdmin)
-router.get("/singleproduct/:productId", ProductController.getSingleProduct)
-router.post("/editproduct", ProductController.editProduct)
-router.post("/deleteproduct/:productId", ProductController.deleteProduct)
+router.get("/best", ProductController.bestSellingProducts)
+router.get("/admin", userAuth, ProductController.getAllProductsAdmin)
 router.post("/search", ProductController.searchProduct)
 router.post("/admin/search", userAuth, ProductController.searchProductForAdmin)
 router.get("/highest/price", async (req, res) => {
@@ -30,9 +29,10 @@ router.get("/highest/price", async (req, res) => {
         res.status(400).send(error.message)
     }
 })
-router.get("/find/category", ProductController.productCategory)
-router.get("/find/category/public", ProductController.productCategorypublic)
+
+router.get("/category", ProductController.productCategory)
+router.get("/category/public", ProductController.productCategorypublic)
 router.post("/archive/category", ProductController.productCategoryArchieve)
-router.get("/trending/products", ProductController.TrendingProducts)
+router.get("/trending", ProductController.TrendingProducts)
 
 export default router;

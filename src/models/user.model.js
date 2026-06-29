@@ -42,12 +42,12 @@ const userSchema = new mongoose.Schema(
         gender: {
             type: String,
             enum: ["male", "female", "other"],
-            default:"male",
+            default: "male",
             required: true,
         },
-        wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "products", }],
-        ordersHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "orders" }],
-        cart: [{ product: { type: mongoose.Schema.Types.ObjectId, ref: "products" }, quantity: { type: Number, default: 1, min: 1 } }],
+        wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product", }],
+        ordersHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
+        cart: [{ product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, quantity: { type: Number, default: 1, min: 1 } }],
         address: [{ type: mongoose.Schema.Types.ObjectId, ref: "Address" }]
     },
     { timestamps: true }

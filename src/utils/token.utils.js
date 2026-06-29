@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken"
-import { JWT_SECRET, JWT_REFRESH_SECRET } from "../config/env.config.js"
+import { JWT_SECRET, JWT_REFRESH_SECRET, NODE_ENV } from "../config/env.config.js"
 
 
 const generateAccessToken = (id) => {
-    return jwt.sign({ id }, JWT_SECRET, { expiresIn: "5m" })
+    return jwt.sign({ id }, JWT_SECRET, { expiresIn: NODE_ENV === "development" ? "5h" : "5m" })
 }
 
 const generateRefreshToken = (id) => {
