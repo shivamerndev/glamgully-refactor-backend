@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import jwt from 'jsonwebtoken'
 
-const customerSchema = new mongoose.Schema(
+
+const userSchema = new mongoose.Schema(
     {
         fullName: {
             type: String,
@@ -53,18 +53,15 @@ const customerSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-customerSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next(); // agar password change nahi hua to skip
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
-customerSchema.methods.comparePassword = async function (enteredPassword) {
+userSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
-customerSchema.methods.generateToken = function () {
-    const token = jwt.sign({ _id: this._id }, process.env.USER_SECRET_KEY);
-    return token;
-}
-export default mongoose.model("Customer", customerSchema);
+
+export default mongoose.model("User", userSchema);

@@ -1,5 +1,7 @@
 import MongoUserRepository from "../repository/implemention/mongo.user.js";
-
+import { AppError } from "../utils/error.utils.js";
+import Address from "../models/address.model.js";
+import { createAddressValidator } from "../validator/address.validator.js";
 
 class UserService {
 
@@ -7,30 +9,77 @@ class UserService {
         this.userRepository = new MongoUserRepository();
     }
 
-    async register(userData) {
+    async createAddress(userId, addressData) {
+        const { error } = createAddressValidator.validate(addressData);
+        if (error) throw new AppError(400, error.details[0].message);
 
-        const existingUser = await this.userRepository.findUserByEmail(userData.email);
+        const newAddress = new Address({ ...addressData, userId });
+        await newAddress.save();
 
-        if (existingUser) return res.status(400).json({ message: "Email already registered" });
+        const customer = await this.userRepository.findUserById(userId);
+        if (!customer) throw new AppError(404, "Customer not found");
 
-        const existingPhone = await this.userRepository.findUserByPhone(phone);
+        customer.address.push(newAddress._id);
+        await customer.save();
 
-        if (existingPhone) return res.status(400).json({ message: "Phone Number already exist" });
-
-        await this.userRepository.createUser(userData)
-
-        // generate token
-        const token = user.generateToken();
-
-        // send token in cookie
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-        });
+        return newAddress;
     }
 
+    async getAddresses(userId) {
+        const customer = await this.userRepository.findUserById(userId);
+        if (!customer) throw new AppError(404, "Customer not found");
+        
+        await customer.populate("address");
+        return customer.address;
+    }
+
+    async updateAddress(addressId, addressData) {
+        const { isDefault } = addressData;
+        if (isDefault) {
+            await Address.findOneAndUpdate({ isDefault: true }, { isDefault: false }, { new: true });
+        }
+        const updatedAddress = await Address.findByIdAndUpdate(addressId, addressData, { new: true });
+        if (!updatedAddress) throw new AppError(404, "Address not found");
+        return updatedAddress;
+    }
+
+    async removeAddress(userId, addressId) {
+        await Address.findByIdAndDelete(addressId);
+
+        const customer = await this.userRepository.findUserById(userId);
+        if (!customer) throw new AppError(404, "Customer not found");
+
+        customer.address = customer.address.filter(id => id.toString() !== addressId);
+        await customer.save();
+    }
+
+    async addToWishlist(userId, productId) {
+        const customer = await this.userRepository.findUserById(userId);
+        if (!customer) throw new AppError(404, "Customer not found");
+
+        if (!customer.wishlist.includes(productId)) {
+            customer.wishlist.push(productId);
+            await customer.save();
+        }
+        return customer.wishlist;
+    }
+
+    async getWishlist(userId) {
+        const customer = await this.userRepository.findUserById(userId);
+        if (!customer) throw new AppError(404, "Customer not found");
+
+        await customer.populate("wishlist");
+        return customer.wishlist;
+    }
+
+    async removeFromWishlist(userId, productId) {
+        const customer = await this.userRepository.findUserById(userId);
+        if (!customer) throw new AppError(404, "Customer not found");
+
+        customer.wishlist = customer.wishlist.filter(id => id.toString() !== productId);
+        await customer.save();
+        return customer.wishlist;
+    }
 }
 
 export default new UserService();
