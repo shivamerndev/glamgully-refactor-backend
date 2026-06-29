@@ -4,6 +4,12 @@ import { userAuth } from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
+/**
+ * @routes /api/v1/auth
+ * @description All Authentication Routes
+ * 
+ */
+
 router.post("/register", authController.register)
 router.post("/login", authController.login)
 router.get("/user", userAuth, authController.getUser)

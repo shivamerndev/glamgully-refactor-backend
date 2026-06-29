@@ -4,6 +4,10 @@ import shopController from "../controllers/shop.controller.js"
 
 const router = Router()
 
+/**
+ * @routes /api/v1/shop
+ * @description All Shop Routes
+ */
 
 router.post("/cart", userAuth, shopController.addToCart)
 router.get("/cart", userAuth, shopController.getCart)
