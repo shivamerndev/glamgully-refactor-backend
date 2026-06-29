@@ -4,12 +4,18 @@ import { userAuth } from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
+/**
+ * @routes /api/v1/auth
+ * @description All Authentication Routes
+ * 
+ */
+
 router.post("/register", authController.register)
 router.post("/login", authController.login)
 router.get("/user", userAuth, authController.getUser)
 router.patch("/user", userAuth, authController.updateUser)
 router.post("/logout", userAuth, authController.logout)
 router.post("/refresh_token", authController.refreshAccessToken)
-// router.post("/google", authController.google)
+router.post("/google", authController.googleAuth)
 
 export default router;

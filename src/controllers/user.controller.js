@@ -1,117 +1,52 @@
-import Address from "../models/address.model.js";
-import { AppError, asyncHandler } from "../utils/error.utils.js";
+import { asyncHandler } from "../utils/error.utils.js";
 import userService from "../services/user.service.js";
-import MongoUserRepository from "../repository/implemention/mongo.user.js";
-import { createAddressValidator } from "../validator/address.validator.js";
-
 
 class UserController {
 
-    constructor() {
-        this.userRepo = new MongoUserRepository()
-    }
-
     createAddress = asyncHandler(async (req, res) => {
-        try {
-
-            const { error } = createAddressValidator.validate(req.body)
-
-            if (error) throw new AppError(400, error.details[0].message)
-
-            const newAddress = new Address(req.body);
-            await newAddress.save();
-
-            const customer = await this.userRepo.findUserById(req.user.id);
-            customer.address.push(newAddress._id);
-            await customer.save(); 
-
-            res.status(201).json(newAddress);
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+        const userId = req.user.id;
+        const newAddress = await userService.createAddress(userId, req.body);
+        return res.success(201, "Address created successfully", newAddress);
     })
-
 
     getAddresses = asyncHandler(async (req, res) => {
-        try {
-            const customer = await this.userRepo.findUserById(req.user._id).populate("address");
-            if (!customer) return res.status(404).json({ message: "Customer not found" });
-            res.status(200).json(customer.address);
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+        const userId = req.user.id;
+        const addresses = await userService.getAddresses(userId);
+        return res.success(200, "Addresses fetched successfully", addresses);
     })
-
 
     updateAddress = asyncHandler(async (req, res) => {
-        try {
-            const { isDefault } = req.body;
-            const { addressId } = req.params;
-            if (isDefault) {
-                await Address.findOneAndUpdate({ isDefault: true }, { isDefault: false }, { new: true })
-            }
-            const updatedAddress = await Address.findByIdAndUpdate(addressId, req.body, { new: true });
-            if (!updatedAddress) return res.status(404).json({ message: "Address not found" });
-            res.status(200).json(updatedAddress);
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+        const { addressId } = req.params;
+        const updatedAddress = await userService.updateAddress(addressId, req.body);
+        return res.success(200, "Address updated successfully", updatedAddress);
     })
-
 
     removeAddress = asyncHandler(async (req, res) => {
-        try {
-            const { addressId } = req.params;
-            await Address.findByIdAndDelete(addressId);
-
-            const customer = await this.userRepo.findUserById(req.user.id);
-            customer.address = customer.address.filter(id => id.toString() !== addressId);
-            await customer.save();
-
-            res.status(200).json({ message: "Address removed" });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+        const userId = req.user.id;
+        const { addressId } = req.params;
+        await userService.removeAddress(userId, addressId);
+        return res.success(200, "Address removed successfully");
     })
-
 
     addToWishlist = asyncHandler(async (req, res) => {
-        try {
-            const { productId } = req.body;
-            const customer = await this.userRepo.findUserById(req.user.id);
-            if (!customer.wishlist.includes(productId)) {
-                customer.wishlist.push(productId);
-                await customer.save();
-            }
-            res.status(200).json(customer.wishlist);
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+        const userId = req.user.id;
+        const { productId } = req.body;
+        const wishlist = await userService.addToWishlist(userId, productId);
+        return res.success(200, "Wishlist updated successfully", wishlist);
     })
-
 
     getWishlists = asyncHandler(async (req, res) => {
-        try {
-            const customer = await this.userRepo.findUserById(req.user._id).populate("wishlist");
-            if (!customer) return res.status(404).json({ message: "Customer not found" });
-            res.status(200).json(customer.wishlist);
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+        const userId = req.user.id;
+        const wishlist = await userService.getWishlist(userId);
+        return res.success(200, "Wishlists fetched successfully", wishlist);
     })
 
-
     removeFromWishlist = asyncHandler(async (req, res) => {
-        try {
-            const { productId } = req.body;
-            const customer = await this.userRepo.findUserById(req.user.id);
-            customer.wishlist = customer.wishlist.filter(id => id.toString() !== productId);
-            await customer.save();
-            res.status(200).json(customer.wishlist);
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+        const userId = req.user.id;
+        const { productId } = req.body;
+        const wishlist = await userService.removeFromWishlist(userId, productId);
+        return res.success(200, "Wishlist removed successfully", wishlist);
     })
 }
 
-export default new UserController()
+export default new UserController();

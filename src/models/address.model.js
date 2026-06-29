@@ -2,9 +2,9 @@ import { Schema, model } from "mongoose";
 
 const addressSchema = new Schema({
 
-    customerId: {
+    userId: {
         type: Schema.Types.ObjectId,
-        ref: "Customer",
+        ref: "User",
         required: true
     },
     fullName: {

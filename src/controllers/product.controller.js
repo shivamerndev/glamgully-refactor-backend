@@ -1,25 +1,11 @@
-import { productValidator } from "../validator/product.validator.js"
-import { uploadMultipleImages } from "../services/cloudinary.service.js"
-import { asyncHandler, AppError } from "../utils/error.utils.js";
+import { asyncHandler } from "../utils/error.utils.js";
 import productService from "../services/product.service.js";
-
 
 class ProductController {
 
     createProduct = asyncHandler(async (req, res) => {
-
         const productimages = req.files;
-
-        const { error } = productValidator(req.body)
-        if (error) throw new AppError(400, error.details[0].message)
-
-        if (!productimages) throw new AppError(400, "Product image is required")
-        const imageurls = await uploadMultipleImages(productimages)
-
-        req.body.images = imageurls;
-
-        await productService.createProduct(req.body);
-
+        await productService.createProduct(req.body, productimages);
         res.success(201, "Product created successfully");
     })
 
@@ -31,7 +17,7 @@ class ProductController {
     bestSellingProducts = asyncHandler(async (req, res) => {
         const products = await productService.bestSellingProducts();
         res.success(200, "Best selling products fetched successfully", products);
-    });
+    })
 
     getAllProductsAdmin = asyncHandler(async (req, res) => {
         const result = await productService.getAllProductsAdmin(req.query);
@@ -46,8 +32,6 @@ class ProductController {
 
     editProduct = asyncHandler(async (req, res) => {
         const { _id, ...updates } = req.body;
-        if (!_id) throw new AppError(400, "Product ID is required");
-        
         const product = await productService.editProduct(_id, updates);
         res.success(200, "Product updated successfully", product);
     })
@@ -60,22 +44,12 @@ class ProductController {
 
     searchProduct = asyncHandler(async (req, res) => {
         const { search } = req.body;
-        if (!search || typeof search !== "string" || !search.trim()) {
-            throw new AppError(400, "Search term is required");
-        }
-        
         const products = await productService.searchProduct(search);
         res.success(200, "Products searched successfully", products);
     })
 
     searchProductForAdmin = asyncHandler(async (req, res) => {
-
         const { search } = req.body;
-
-        if (!search || typeof search !== "string" || !search.trim()) {
-            throw new AppError(400, "Search term is required");
-        }
-        
         const products = await productService.searchProductForAdmin(search);
         res.success(200, "Admin products searched successfully", products);
     })
@@ -99,7 +73,7 @@ class ProductController {
     TrendingProducts = asyncHandler(async (req, res) => {
         const products = await productService.TrendingProducts();
         res.success(200, "Trending products fetched successfully", products);
-    });
+    })
 
 }
 

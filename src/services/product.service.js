@@ -1,5 +1,7 @@
 import MongoProductRepository from "../repository/implemention/mongo.product.js";
 import { AppError } from "../utils/error.utils.js";
+import { productValidator } from "../validator/product.validator.js";
+import { uploadMultipleImages } from "../services/cloudinary.service.js";
 
 class ProductService {
 
@@ -7,7 +9,14 @@ class ProductService {
         this.productRepository = new MongoProductRepository();
     }
 
-    async createProduct(productData) {
+    async createProduct(productData, files) {
+        const { error } = productValidator(productData);
+        if (error) throw new AppError(400, error.details[0].message);
+
+        if (!files || files.length === 0) throw new AppError(400, "Product image is required");
+        const imageurls = await uploadMultipleImages(files);
+
+        productData.images = imageurls;
         const product = await this.productRepository.createProduct(productData);
         if (!product) throw new AppError(500, "Product creation failed");
         return product;
@@ -19,11 +28,11 @@ class ProductService {
         const limit = parseInt(query.limit) || 8;
         const sort = query.sort || "a-z";
         const skip = (page - 1) * limit;
-        
+
         const { category, avail, min, max, rating } = query;
 
         let filter = { isActive: { $ne: false } };
-        
+
         if (category) filter.category = category;
         if (avail) filter.quantity = avail === 'instock' ? { $gt: 0 } : { $lte: 0 };
         if (min && max) filter.price = { $gte: Number(min), $lte: Number(max) };
@@ -46,11 +55,11 @@ class ProductService {
         const products = await this.productRepository.findProducts(filter, sortOption, skip, limit);
         const categories = await this.productRepository.getDistinctCategories({ isActive: true });
 
-        return { 
-            products, 
-            categories, 
-            totalPages: Math.ceil(total / limit), 
-            productsLength: { total, instock, outstock } 
+        return {
+            products,
+            categories,
+            totalPages: Math.ceil(total / limit),
+            productsLength: { total, instock, outstock }
         };
     }
 
@@ -69,14 +78,14 @@ class ProductService {
         let filter = {};
         if (category) filter.category = category;
         if (availability) filter.quantity = availability === 'instock' ? { $gt: 0 } : { $lte: 0 };
-        
+
         if (price && price === '1000+') {
             filter.price = { $gte: 1000, $lte: 20000 };
         } else if (price) {
             const [min, max] = price.split('-').map(Number);
             filter.price = { $gte: min, $lte: max };
         }
-        
+
         if (status) filter.isActive = status === 'active';
 
         const lowStocks = await this.productRepository.countDocuments({ quantity: { $lte: 10 } });
@@ -84,12 +93,12 @@ class ProductService {
         const products = await this.productRepository.findProducts(filter, { createdAt: -1 }, skip, limit);
         const categories = await this.productRepository.getDistinctCategories({});
 
-        return { 
-            products, 
-            categories, 
-            totalPages: Math.ceil(total / limit), 
-            totalProducts: total, 
-            lowStocks 
+        return {
+            products,
+            categories,
+            totalPages: Math.ceil(total / limit),
+            totalProducts: total,
+            lowStocks
         };
     }
 
@@ -101,7 +110,7 @@ class ProductService {
     }
 
     async editProduct(productId, updates) {
-        // Ensure _id is not in the updates object if passed
+        if (!productId) throw new AppError(400, "Product ID is required");
         const updateData = { ...updates };
         delete updateData._id;
 
@@ -117,11 +126,17 @@ class ProductService {
     }
 
     async searchProduct(search) {
+        if (!search || typeof search !== "string" || !search.trim()) {
+            throw new AppError(400, "Search term is required");
+        }
         const filter = { title: { $regex: search, $options: "i" }, isActive: { $ne: false } };
         return await this.productRepository.findProducts(filter, {}, 0, 0, '_id title');
     }
 
     async searchProductForAdmin(search) {
+        if (!search || typeof search !== "string" || !search.trim()) {
+            throw new AppError(400, "Search term is required");
+        }
         const filter = { title: { $regex: search, $options: "i" } };
         return await this.productRepository.findProducts(filter);
     }

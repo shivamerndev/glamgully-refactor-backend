@@ -6,6 +6,11 @@ import Product from "../models/product.model.js";
 
 const router = Router()
 
+/**
+ * @routes /api/v1/product
+ * @description All Product Routes
+ */
+
 router.post("/create", upload.array("productimage", 5), ProductController.createProduct)
 router.get("/all", ProductController.getAllProducts)
 
