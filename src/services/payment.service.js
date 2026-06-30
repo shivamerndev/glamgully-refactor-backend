@@ -22,7 +22,6 @@ class PaymentService {
         this.userRepo = new MongoUserRepository()
     }
 
-    
 
     createOrder = async (amount) => {
 

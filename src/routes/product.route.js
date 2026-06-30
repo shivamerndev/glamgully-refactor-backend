@@ -30,9 +30,9 @@ router.get("/highest/price", async (req, res) => {
         res.status(400).send(error.message)
     }
 })
-router.get("/find/category", ProductController.productCategory)
-router.get("/find/category/public", ProductController.productCategorypublic)
-router.post("/archive/category", ProductController.productCategoryArchieve)
-router.get("/trending/products", ProductController.TrendingProducts)
+router.get("/category", ProductController.productCategory)
+// router.get("/category/public", ProductController.productCategorypublic)
+router.post("/archive-category", ProductController.productCategoryArchieve)
+router.get("/trending", ProductController.TrendingProducts)
 
 export default router;
