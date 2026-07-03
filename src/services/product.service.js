@@ -53,11 +53,11 @@ class ProductService {
         }
 
         const products = await this.productRepository.findProducts(filter, sortOption, skip, limit);
-        const categories = await this.productRepository.getDistinctCategories({ isActive: true });
+        // const categories = await this.productRepository.getDistinctCategories({ isActive: true });
 
         return {
             products,
-            categories,
+            // categories,
             totalPages: Math.ceil(total / limit),
             productsLength: { total, instock, outstock }
         };
@@ -103,8 +103,8 @@ class ProductService {
     }
 
     async getSingleProduct(productId) {
-        const populateOptions = { path: "reviews", options: { sort: { createdAt: -1 } } };
-        const product = await this.productRepository.getProductById(productId, populateOptions);
+        // const populateOptions = { path: "reviews", options: { sort: { createdAt: -1 } } };
+        const product = await this.productRepository.getProductById(productId);
         if (!product) throw new AppError(404, "Product not found");
         return product;
     }
@@ -146,7 +146,7 @@ class ProductService {
             {
                 $group: {
                     _id: "$category",
-                    image: { $first: { $arrayElemAt: ["$productimage", 0] } }
+                    image: { $first: { $arrayElemAt: ["$images", 0] } }
                 }
             },
             {
@@ -158,8 +158,8 @@ class ProductService {
             }
         ];
         const categories = await this.productRepository.aggregate(pipeline);
-        const activecategory = await this.productRepository.getDistinctCategories({ isActive: false });
-        return { categories, activecategory };
+        // const activecategory = await this.productRepository.getDistinctCategories({ isActive: false });
+        return { categories };
     }
 
     async productCategorypublic() {
@@ -168,7 +168,7 @@ class ProductService {
             {
                 $group: {
                     _id: "$category",
-                    image: { $first: { $arrayElemAt: ["$productimage", 0] } }
+                    image: { $first: { $arrayElemAt: ["$images", 0] } }
                 }
             },
             {

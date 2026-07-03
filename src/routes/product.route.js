@@ -13,11 +13,11 @@ const router = Router()
 
 router.post("/create", upload.array("productimage", 5), ProductController.createProduct)
 router.get("/all", ProductController.getAllProducts)
+router.get("/:productId", ProductController.getSingleProduct)
 
-router.get("/getproduct", ProductController.getAllProducts)
+// router.get("/getproduct", ProductController.getAllProducts)
 router.get("/best/products", ProductController.bestSellingProducts)
 router.get("/getadminproduct", userAuth, ProductController.getAllProductsAdmin)
-router.get("/singleproduct/:productId", ProductController.getSingleProduct)
 router.post("/editproduct", ProductController.editProduct)
 router.post("/deleteproduct/:productId", ProductController.deleteProduct)
 router.post("/search", ProductController.searchProduct)

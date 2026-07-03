@@ -13,15 +13,36 @@ class MongoProductRepository extends IProductRepository {
         return await Product.countDocuments(filter);
     }
 
-    async findProducts(filter = {}, sortOption = {}, skip = 0, limit = 0, selectFields = null) {
-        let query = Product.find(filter);
-        if (Object.keys(sortOption).length > 0) query = query.sort(sortOption);
-        if (skip > 0) query = query.skip(skip);
-        if (limit > 0) query = query.limit(limit);
-        if (selectFields) query = query.select(selectFields);
-        return await query;
+    async findProducts(filter = {}, sortOption = {}, skip = 0, limit = 0) {
+
+        const pipeline = [
+            { $match: filter },
+            {
+                $project: {
+                    title: 1,
+                    price: 1,
+                    ratings: 1,
+                    image: { $arrayElemAt: ["$images", 0] },
+                },
+            },
+        ];
+
+        if (Object.keys(sortOption).length > 0) {
+            pipeline.push({ $sort: sortOption });
+        }
+
+        if (skip > 0) {
+            pipeline.push({ $skip: skip });
+        }
+
+        if (limit > 0) {
+            pipeline.push({ $limit: limit });
+        }
+
+        return await Product.aggregate(pipeline);
     }
 
+    
     async getDistinctCategories(filter = {}) {
         return await Product.distinct("category", filter);
     }
